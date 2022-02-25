@@ -1,4 +1,5 @@
 import argparse
+import os
 from pathlib import Path
 
 from load import load_gfa
@@ -10,7 +11,7 @@ def parse_args():
     parser = argparse.ArgumentParser(prog="GFAConverter", description=desc)
 
     help = "Output file path"
-    parser.add_argument("--out", "-o", type=str, help=help)
+    parser.add_argument("--out", "-o", type=Path, help=help)
 
     help = "Supported output formats"
     parser.add_argument("--format", "-f", type=str, choices=format_choices(), help=help)
@@ -25,6 +26,9 @@ if __name__ == '__main__':
 
     try:
         g = load_gfa(args.gfafile)
+        parent_dir = args.out.parent
+        if not parent_dir:
+            os.makedirs(parent_dir, exist_ok=True)
         graph_to_file(g, Path(args.out), args.format)
     except FileNotFoundError:
         print(f"Whoops! No such file {args.gfafile}!")

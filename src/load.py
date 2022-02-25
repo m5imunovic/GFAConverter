@@ -44,6 +44,36 @@ def load_gfa1(gfa: gfapy.Gfa) -> Graph:
         segments.append(inv_id)
         virtual_edges.append((s.sid, inv_id))
 
+    print("Loaded segments")
+    edges = []
+    for e in gfa.edges:
+        fw_from, fw_to, rc_from, rc_to = names_from_orientation(e)
+        # Forward string
+        edges.append((fw_from, fw_to))
+        # Reverse complement string
+        edges.append((rc_from, rc_to))
+
+    print("Loaded edges")
+
+    graph = Graph(directed=True)
+    graph.add_vertices(segments)
+    graph.add_edges(edges)
+    graph.add_edges(virtual_edges)
+
+    print("Created graph")
+
+    return graph
+
+
+def load_gfa2(gfa: gfapy.Gfa) -> Graph:
+    segments = []
+    virtual_edges = []
+    for s in gfa.segments:
+        segments.append(s.sid)
+        inv_id = inv_complement_name(s.sid)
+        segments.append(inv_id)
+        virtual_edges.append((s.sid, inv_id))
+
     edges = []
     for e in gfa.edges:
         fw_from, fw_to, rc_from, rc_to = names_from_orientation(e)
@@ -60,10 +90,6 @@ def load_gfa1(gfa: gfapy.Gfa) -> Graph:
     return graph
 
 
-def load_gfa2(gfa: gfapy.Gfa) -> Graph:
-    return Graph()
-
-
 #@typechecked
 @require(lambda gfa_path: gfa_path.exists(), description="Input path does not exist.")
 def load_gfa(gfa_path: Path) -> Graph:
@@ -74,6 +100,7 @@ def load_gfa(gfa_path: Path) -> Graph:
         if gfa.version == 'gfa2':
             return load_gfa2(gfa)
     except NotImplementedError:
+        print("Not implemented")
         raise NotImplementedError
     except Exception as ex:
         # TODO: Analyze exception and return proper response
@@ -84,4 +111,6 @@ def load_gfa(gfa_path: Path) -> Graph:
 if __name__ == "__main__":
     base_path = Path(__file__).parent.parent.absolute() / "examples"
     load_gfa(base_path / "example1.gfa")
-    load_gfa(base_path / "loop.gfa")
+    load_gfa(base_path / "example1.gfa2")
+    load_gfa(base_path / "example_from_spec.gfa")
+    load_gfa(base_path / "example_from_spec.gfa2")
